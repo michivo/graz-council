@@ -1,0 +1,22 @@
+[project]
+name = "graz-fetcher"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Michael Faschinger", email = "michivo@gmail.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "pymupdf>=1.28.2",
+    "beautifulsoup4>=4.15.0",
+    "requests>=2.34.2",
+]
+
+[project.scripts]
+graz-fetcher = "graz_fetcher:main"
+graz-indexer = "graz_indexer:main"
+
+[build-system]
+requires = ["uv_build>=0.12.18,<0.13.0"]
+build-backend = "uv_build"

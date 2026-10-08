@@ -1,0 +1,12 @@
+[project]
+name = "graz-api"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Michael Faschinger", email = "michivo@gmail.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "flask>=3.1.3",
+]
