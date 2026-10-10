@@ -55,7 +55,7 @@ The server listens on `http://127.0.0.1:5000` by default. To make it
 available on another interface or port, use Flask's standard options:
 
 ```powershell
-uv run flask --app ./main.py run --host 0.0.0.0 --port 8000
+uv run flask --app ./src/main.py run --host 0.0.0.0 --port 8000
 ```
 
 ## Run tests
@@ -103,8 +103,18 @@ Searches the FTS5 index. The `q` parameter is required; `limit` defaults to
 `20` and is capped at `100`, while `offset` defaults to `0` and is never
 negative.
 
+Results can be sorted and filtered by `document_date`:
+
+- `sort` — one of `relevance` (default, FTS5 rank order), `date_asc`, or
+  `date_desc`. An invalid value returns `400`.
+- `date_from` / `date_to` — optional `YYYY-MM-DD` bounds (inclusive) applied
+  to `document_date`. Either or both may be supplied. A malformed date
+  returns `400`.
+
 ```powershell
 curl "http://127.0.0.1:5000/search?q=budget&limit=10&offset=0"
+curl "http://127.0.0.1:5000/search?q=budget&sort=date_desc"
+curl "http://127.0.0.1:5000/search?q=budget&date_from=2024-01-01&date_to=2024-12-31"
 ```
 
 Successful response:

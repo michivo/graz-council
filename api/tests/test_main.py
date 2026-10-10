@@ -1,9 +1,10 @@
+import datetime
 import sqlite3
 import tempfile
 import unittest
 from pathlib import Path
 
-import main
+from api.src import main
 
 
 class ApiTestCase(unittest.TestCase):
@@ -51,7 +52,9 @@ class ApiTestCase(unittest.TestCase):
                         index,
                         "The council approved the budget.",
                         f"https://example.test/meeting-{index}.pdf",
-                        "2026-01-01",
+                        (
+                            datetime.date(2026, 1, 1) + datetime.timedelta(days=index)
+                        ).isoformat(),
                         f"Meeting {index}",
                         "",
                     )
@@ -104,6 +107,54 @@ class ApiTestCase(unittest.TestCase):
         response = self.client.get("/search?q=budget&limit=1000")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json()["count"], 100)
+
+    def test_search_sorts_by_date_ascending(self) -> None:
+        response = self.client.get("/search?q=budget&sort=date_asc&limit=5")
+
+        self.assertEqual(response.status_code, 200)
+        dates = [r["document_date"] for r in response.get_json()["results"]]
+        self.assertEqual(dates, sorted(dates))
+        self.assertEqual(dates[0], "2026-01-02")
+
+    def test_search_sorts_by_date_descending(self) -> None:
+        response = self.client.get("/search?q=budget&sort=date_desc&limit=5")
+
+        self.assertEqual(response.status_code, 200)
+        dates = [r["document_date"] for r in response.get_json()["results"]]
+        self.assertEqual(dates, sorted(dates, reverse=True))
+
+    def test_search_rejects_invalid_sort_value(self) -> None:
+        response = self.client.get("/search?q=budget&sort=bogus")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("error", response.get_json())
+
+    def test_search_filters_by_date_range(self) -> None:
+        response = self.client.get(
+            "/search?q=budget&date_from=2026-01-10&date_to=2026-01-12&limit=100"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()
+        self.assertEqual(payload["count"], 3)
+        dates = {r["document_date"] for r in payload["results"]}
+        self.assertEqual(dates, {"2026-01-10", "2026-01-11", "2026-01-12"})
+
+    def test_search_filters_by_date_from_only(self) -> None:
+        response = self.client.get(
+            "/search?q=budget&date_from=2026-04-10&limit=100"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()
+        self.assertTrue(payload["count"] > 0)
+        self.assertTrue(all(r["document_date"] >= "2026-04-10" for r in payload["results"]))
+
+    def test_search_rejects_invalid_date_format(self) -> None:
+        response = self.client.get("/search?q=budget&date_from=not-a-date")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("error", response.get_json())
 
 
 if __name__ == "__main__":
