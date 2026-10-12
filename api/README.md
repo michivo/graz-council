@@ -35,6 +35,19 @@ The API validates this setting when it starts and exits with a configuration
 error if the file is missing, invalid, or does not contain a non-empty
 `DATABASE`.
 
+### CORS
+
+The [`web/`](../web) frontend is a client-side rendered SPA, so search
+requests are made directly from the browser and the API must allow
+cross-origin requests. Allowed origins are configured in `config.ini` using
+the `ALLOWED_ORIGINS` property under `[cors]` as a comma-separated list; it
+defaults to `*` (all origins) when unset:
+
+```ini
+[cors]
+ALLOWED_ORIGINS = http://localhost:5173
+```
+
 ## Setup
 
 From this directory, install the locked dependencies:

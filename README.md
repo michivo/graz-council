@@ -4,13 +4,14 @@ Graz Council is a small, local search application for making past decisions,
 requests, and protocols from Graz City Council meetings easier to find. It
 collects the council's published meeting documents, extracts their text, and
 stores the result in a SQLite full-text search index that can be queried
-through a lightweight HTTP API.
+through a lightweight HTTP API and a German-language web interface.
 
-The project is intentionally split into two Python packages:
+The project is split into three packages:
 
 - [`tools/`](tools/) downloads meeting metadata and optionally PDFs, then
   extracts and indexes PDF content.
 - [`api/`](api/) serves the indexed content through a Flask API.
+- [`web/`](web/) is a React Router web app with a search page for the API.
 
 ## How it works
 
@@ -135,6 +136,13 @@ Search for a phrase:
 curl "http://127.0.0.1:5000/search?q=budget&limit=10&offset=0"
 ```
 
+Sort by date or restrict to a date range:
+
+```powershell
+curl "http://127.0.0.1:5000/search?q=budget&sort=date_desc"
+curl "http://127.0.0.1:5000/search?q=budget&date_from=2024-01-01&date_to=2024-12-31"
+```
+
 The search endpoint returns JSON in this shape:
 
 ```json
@@ -156,7 +164,25 @@ The search endpoint returns JSON in this shape:
 
 `q` is required. `limit` defaults to 20 and is capped at 100; `offset`
 defaults to 0. Search input is treated as a quoted FTS5 phrase, so punctuation
-typed by users does not become raw FTS5 syntax.
+typed by users does not become raw FTS5 syntax. Results can be sorted with
+`sort` (`relevance`, `date_asc`, or `date_desc`) and filtered with
+`date_from`/`date_to` (`YYYY-MM-DD`, inclusive).
+
+### 4. Run the web interface
+
+The [`web/`](web/) app is a German-language search page that calls the API
+above from its server-side loader (no CORS setup required). Point it at the
+running API, then start it:
+
+```powershell
+Set-Location web
+npm install
+$env:API_BASE_URL = "http://127.0.0.1:5000"
+npm run dev
+```
+
+The development server listens on `http://localhost:5173`. See
+[`web/README.md`](web/README.md) for build and deployment instructions.
 
 ## Development
 
@@ -171,6 +197,7 @@ Useful package-specific documentation:
 
 - [Tool configuration and data processing](tools/README.md)
 - [API configuration, endpoints, and tests](api/README.md)
+- [Web search interface](web/README.md)
 
 ## Project layout
 
@@ -183,6 +210,11 @@ Useful package-specific documentation:
 │   └── src/
 │       ├── graz_fetcher/       # Archive scraping and document metadata
 │       └── graz_indexer/       # PDF extraction and SQLite FTS5 indexing
+├── web/
+│   └── app/
+│       ├── components/         # Search form, results, icons
+│       ├── lib/                # Shared types and server-only API client
+│       └── routes/home.tsx     # Search page loader and view
 └── README.md
 ```
 

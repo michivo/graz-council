@@ -101,7 +101,7 @@ def extract_pdf_metadata(pdf_path: str, metadata_path: str) -> tuple[list[dict],
     metadata = {
         "filename": os.path.basename(pdf_path),
         "source_url": stored_metadata["pdf_url"] if stored_metadata and "pdf_url" in stored_metadata else "file://" + pdf_path,
-        "document_date": stored_metadata["date"] if stored_metadata and "document_date" in stored_metadata else datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "document_date": stored_metadata["date"] if stored_metadata and "date" in stored_metadata else datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "document_title": stored_metadata["document_title"] if stored_metadata and "document_title" in stored_metadata else os.path.splitext(os.path.basename(pdf_path))[0]
     }
 

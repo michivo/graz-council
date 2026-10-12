@@ -4,6 +4,7 @@ import sqlite3
 from pathlib import Path
 
 from flask import Flask, g, jsonify, request
+from flask_cors import CORS
 
 DATE_FORMAT = "%Y-%m-%d"
 SORT_OPTIONS = {
@@ -35,6 +36,17 @@ if not DB_PATH:
     raise RuntimeError(
         f"Configuration file {CONFIG_PATH} must define a non-empty DATABASE value"
     )
+
+# The web client is a client-side rendered SPA, so search requests come
+# directly from the browser and the API must allow cross-origin requests.
+# Configure allowed origins via `[cors] ALLOWED_ORIGINS` (comma-separated),
+# defaulting to "*" since this is a read-only, unauthenticated search API.
+try:
+    cors_origins = config.get("cors", "ALLOWED_ORIGINS").strip()
+except (configparser.NoOptionError, configparser.NoSectionError):
+    cors_origins = "*"
+origins = [origin.strip() for origin in cors_origins.split(",") if origin.strip()] or "*"
+CORS(app, resources={r"/*": {"origins": origins}})
 
 def get_db() -> sqlite3.Connection:
     if "db" not in g:
