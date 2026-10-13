@@ -87,6 +87,7 @@ class ApiTestCase(unittest.TestCase):
         payload = response.get_json()
         self.assertEqual(payload["query"], "budget")
         self.assertEqual(payload["count"], 2)
+        self.assertEqual(payload["total"], 101)
         self.assertEqual(
             set(payload["results"][0]),
             {
@@ -123,6 +124,14 @@ class ApiTestCase(unittest.TestCase):
         dates = [r["document_date"] for r in response.get_json()["results"]]
         self.assertEqual(dates, sorted(dates, reverse=True))
 
+    def test_search_total_reflects_full_match_count_across_pages(self) -> None:
+        response = self.client.get("/search?q=budget&limit=5&offset=50")
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()
+        self.assertEqual(payload["count"], 5)
+        self.assertEqual(payload["total"], 101)
+
     def test_search_rejects_invalid_sort_value(self) -> None:
         response = self.client.get("/search?q=budget&sort=bogus")
 
@@ -137,6 +146,7 @@ class ApiTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         payload = response.get_json()
         self.assertEqual(payload["count"], 3)
+        self.assertEqual(payload["total"], 3)
         dates = {r["document_date"] for r in payload["results"]}
         self.assertEqual(dates, {"2026-01-10", "2026-01-11", "2026-01-12"})
 

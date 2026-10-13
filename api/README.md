@@ -136,6 +136,7 @@ Successful response:
 {
   "query": "budget",
   "count": 1,
+  "total": 1,
   "results": [
     {
       "filename": "council-meeting.pdf",
@@ -148,6 +149,10 @@ Successful response:
   ]
 }
 ```
+
+`count` is the number of results in this page (at most `limit`), while
+`total` is the total number of matching documents across all pages, which
+can be used to drive pagination.
 
 If `q` is missing or empty, the API returns `400`:
 

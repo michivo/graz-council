@@ -10,6 +10,7 @@ import { PAGE_SIZE } from "./search";
 interface SearchApiResponse {
   query: string;
   count: number;
+  total: number;
   results: SearchOutcome["results"];
 }
 
@@ -29,7 +30,7 @@ export async function searchDocuments(params: {
   offset: number;
 }): Promise<SearchOutcome> {
   if (!params.query) {
-    return { results: [], count: 0, error: null };
+    return { results: [], count: 0, total: 0, error: null };
   }
 
   const url = new URL("/search", API_BASE_URL);
@@ -51,6 +52,7 @@ export async function searchDocuments(params: {
     return {
       results: [],
       count: 0,
+      total: 0,
       error:
         "Die Such-API ist derzeit nicht erreichbar. Bitte versuchen Sie es später erneut.",
     };
@@ -62,9 +64,9 @@ export async function searchDocuments(params: {
     const message =
       (payload as SearchApiError | null)?.error ??
       "Die Suche ist fehlgeschlagen. Bitte versuchen Sie es erneut.";
-    return { results: [], count: 0, error: message };
+    return { results: [], count: 0, total: 0, error: message };
   }
 
   const data = payload as SearchApiResponse;
-  return { results: data.results, count: data.count, error: null };
+  return { results: data.results, count: data.count, total: data.total, error: null };
 }

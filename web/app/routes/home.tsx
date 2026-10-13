@@ -65,7 +65,8 @@ export async function clientLoader({ request }: Route.ClientLoaderArgs) {
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
-  const { query, sort, dateFrom, dateTo, offset, results, error } = loaderData;
+  const { query, sort, dateFrom, dateTo, offset, results, total, error } =
+    loaderData;
   const hasSearched = query !== "";
 
   return (
@@ -96,6 +97,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           query={query}
           hasSearched={hasSearched}
           offset={offset}
+          total={total}
           pageSize={PAGE_SIZE}
           sort={sort}
           dateFrom={dateFrom}

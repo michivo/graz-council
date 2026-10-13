@@ -30,5 +30,6 @@ export interface SearchResultItem {
 export interface SearchOutcome {
   results: SearchResultItem[];
   count: number;
+  total: number;
   error: string | null;
 }

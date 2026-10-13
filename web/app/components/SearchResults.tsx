@@ -8,6 +8,7 @@ interface SearchResultsProps {
   query: string;
   hasSearched: boolean;
   offset: number;
+  total: number;
   pageSize: number;
   sort: SortOption;
   dateFrom: string;
@@ -95,6 +96,7 @@ export function SearchResults({
   query,
   hasSearched,
   offset,
+  total,
   pageSize,
   sort,
   dateFrom,
@@ -131,12 +133,14 @@ export function SearchResults({
   const from = offset + 1;
   const to = offset + results.length;
   const hasPrevious = offset > 0;
-  const hasNext = results.length === pageSize;
+  const hasNext = to < total;
+  const currentPage = Math.floor(offset / pageSize) + 1;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
     <section aria-label="Suchergebnisse" className="mt-8">
       <p role="status" className="mb-4 text-sm text-gray-600 dark:text-gray-300">
-        Ergebnisse {from}–{to} für &bdquo;{query}&ldquo;
+        Ergebnisse {from}–{to} von {total} für &bdquo;{query}&ldquo;
       </p>
 
       <ul className="space-y-4">
@@ -198,6 +202,10 @@ export function SearchResults({
             Zurück
           </span>
         )}
+
+        <span className="text-sm text-gray-600 dark:text-gray-300">
+          Seite {currentPage} von {totalPages}
+        </span>
 
         {hasNext ? (
           <Link

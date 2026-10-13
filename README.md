@@ -149,6 +149,7 @@ The search endpoint returns JSON in this shape:
 {
   "query": "budget",
   "count": 1,
+  "total": 1,
   "results": [
     {
       "filename": "council-meeting.pdf",
@@ -166,7 +167,9 @@ The search endpoint returns JSON in this shape:
 defaults to 0. Search input is treated as a quoted FTS5 phrase, so punctuation
 typed by users does not become raw FTS5 syntax. Results can be sorted with
 `sort` (`relevance`, `date_asc`, or `date_desc`) and filtered with
-`date_from`/`date_to` (`YYYY-MM-DD`, inclusive).
+`date_from`/`date_to` (`YYYY-MM-DD`, inclusive). `count` is the number of
+results in this page; `total` is the number of matching documents across all
+pages.
 
 ### 4. Run the web interface
 

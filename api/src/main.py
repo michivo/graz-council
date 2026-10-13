@@ -110,22 +110,29 @@ def search():
     if date_to:
         conditions.append("document_date <= ?")
         params.append(date_to)
-    params.extend([limit, offset])
+    where_clause = " AND ".join(conditions)
 
     try:
-        rows = get_db().execute(
+        db = get_db()
+        total = db.execute(
+            f"SELECT COUNT(*) FROM fts5_index WHERE {where_clause}",
+            params,
+        ).fetchone()[0]
+        rows = db.execute(
             f"""
             SELECT filename, page, source_url, document_date, document_title,
                    snippet(fts5_index, 3, '<mark>', '</mark>', '…', 32) AS snippet
             FROM fts5_index
-            WHERE {" AND ".join(conditions)}
+            WHERE {where_clause}
             ORDER BY {SORT_OPTIONS[sort]}
             LIMIT ? OFFSET ?
             """,
-            params,
+            [*params, limit, offset],
         ).fetchall()
     except sqlite3.OperationalError:
         app.logger.exception("Search query failed: q=%r sort=%r", q, sort)
         return jsonify(error="Search failed."), 400
 
-    return jsonify(query=q, count=len(rows), results=[dict(r) for r in rows])
+    return jsonify(
+        query=q, count=len(rows), total=total, results=[dict(r) for r in rows]
+    )
