@@ -61,7 +61,7 @@ uv sync
 Start Flask's development server with:
 
 ```powershell
-uv run flask --app ./main.py run
+uv run flask --app ./src/main.py run
 ```
 
 The server listens on `http://127.0.0.1:5000` by default. To make it

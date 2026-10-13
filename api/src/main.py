@@ -124,7 +124,8 @@ def search():
             """,
             params,
         ).fetchall()
-    except sqlite3.OperationalError as e:
+    except sqlite3.OperationalError:
+        app.logger.exception("Search query failed: q=%r sort=%r", q, sort)
         return jsonify(error="Search failed."), 400
 
     return jsonify(query=q, count=len(rows), results=[dict(r) for r in rows])
