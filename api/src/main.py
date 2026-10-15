@@ -1,5 +1,6 @@
 import configparser
 import datetime
+import re
 import sqlite3
 from pathlib import Path
 
@@ -12,12 +13,30 @@ SORT_OPTIONS = {
     "date_asc": "document_date ASC",
     "date_desc": "document_date DESC",
 }
+# Matches either a double-quoted phrase or a single whitespace-delimited term.
+SEARCH_TERM_PATTERN = re.compile(r'"[^"]*"|\S+')
 
 
 def parse_date_param(value: str) -> str | None:
     """Validate a date query parameter, returning it unchanged or raising ValueError."""
     datetime.datetime.strptime(value, DATE_FORMAT)
     return value
+
+
+def build_fts_query(q: str) -> str:
+    """Build an FTS5 MATCH expression from a user query with multiple search terms.
+
+    Bare words are treated as individual terms, while double-quoted substrings
+    are kept together as exact phrases. All terms/phrases are combined with
+    AND so a document must contain every one of them. Each term is quoted so
+    user-typed FTS5 syntax characters (e.g. " - * : ( )) don't cause errors.
+    """
+    terms = []
+    for match in SEARCH_TERM_PATTERN.findall(q):
+        if match.startswith('"') and match.endswith('"') and len(match) >= 2:
+            match = match[1:-1]
+        terms.append('"' + match.replace('"', '""') + '"')
+    return " AND ".join(terms)
 
 app = Flask(__name__)
 CONFIG_PATH = Path(__file__).parents[0] / "../config.ini"
@@ -98,9 +117,9 @@ def search():
     except ValueError:
         return jsonify(error="Invalid date format. Use YYYY-MM-DD."), 400
 
-    # Wrap the input as a quoted FTS5 phrase so user-typed characters
-    # like " - * : ( ) don't cause syntax errors.
-    fts_query = '"' + q.replace('"', '""') + '"'
+    # Support multiple search terms: bare words are ANDed together, while
+    # "quoted phrases" are kept intact as a single exact phrase.
+    fts_query = build_fts_query(q)
 
     conditions = ["fts5_index MATCH ?"]
     params: list = [fts_query]

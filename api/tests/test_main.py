@@ -166,6 +166,42 @@ class ApiTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("error", response.get_json())
 
+    def test_search_with_multiple_terms_requires_all_of_them(self) -> None:
+        response = self.client.get("/search?q=council+budget&limit=100")
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()
+        self.assertEqual(payload["total"], 101)
+
+        response = self.client.get("/search?q=council+nonexistentterm&limit=100")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["total"], 0)
+
+    def test_search_supports_quoted_phrase_combined_with_extra_terms(self) -> None:
+        response = self.client.get(
+            '/search?q="approved the budget" council&limit=100'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["total"], 101)
+
+        response = self.client.get(
+            '/search?q="budget approved" council&limit=100'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["total"], 0)
+
+    def test_build_fts_query_combines_terms_and_phrases_with_and(self) -> None:
+        self.assertEqual(
+            main.build_fts_query("budget radweg"), '"budget" AND "radweg"'
+        )
+        self.assertEqual(
+            main.build_fts_query('budget "radweg und gehweg" finanzierung'),
+            '"budget" AND "radweg und gehweg" AND "finanzierung"',
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

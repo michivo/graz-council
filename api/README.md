@@ -162,9 +162,13 @@ If `q` is missing or empty, the API returns `400`:
 }
 ```
 
-Search terms are passed as quoted FTS5 phrases so punctuation in user input
-does not become FTS5 syntax. Search failures return `400` with an `error`
-message.
+`q` supports multiple search terms. Whitespace-separated words are combined
+with `AND`, so a document must contain every term; wrap a `"quoted phrase"`
+to require that exact sequence of words instead. For example,
+`q=budget "radweg und gehweg" finanzierung` matches documents that contain
+`budget`, the exact phrase `radweg und gehweg`, and `finanzierung`. Each term
+or phrase is quoted internally so punctuation in user input does not become
+FTS5 syntax. Search failures return `400` with an `error` message.
 
 ## Development notes
 
