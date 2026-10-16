@@ -9,12 +9,14 @@ interface SearchFormProps {
   sort: SortOption;
   dateFrom: string;
   dateTo: string;
+  meeting: string;
 }
 
-export function SearchForm({ query, sort, dateFrom, dateTo }: SearchFormProps) {
+export function SearchForm({ query, sort, dateFrom, dateTo, meeting }: SearchFormProps) {
   const [currentDateFrom, setCurrentDateFrom] = useState(dateFrom);
   const [currentDateTo, setCurrentDateTo] = useState(dateTo);
-  const hasFilters = sort !== "relevance" || dateFrom !== "" || dateTo !== "";
+  const [currentMeeting, setCurrentMeeting] = useState(meeting);
+  const hasFilters = sort !== "relevance" || dateFrom !== "" || dateTo !== "" || meeting !== "";
 
   return (
     <Form method="get" role="search" aria-label="Dokumentensuche" className="space-y-4">
@@ -107,7 +109,11 @@ export function SearchForm({ query, sort, dateFrom, dateTo }: SearchFormProps) {
               className="w-full rounded-lg border border-emerald-300 bg-white px-3 py-2 text-base text-gray-900 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-50"
             />
           </div>
-          <MeetingFilter dateFrom={currentDateFrom || null} dateTo={currentDateTo || null}>
+          <MeetingFilter 
+            dateFrom={currentDateFrom || null} 
+            dateTo={currentDateTo || null} 
+            selectedMeeting={currentMeeting} onSelectedMeetingChange={(e) => setCurrentMeeting(e)}
+          >
           </MeetingFilter>
         </fieldset>
       </details>

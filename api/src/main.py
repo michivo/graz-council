@@ -169,7 +169,7 @@ def search():
         params.append(date_from)
     if date_to:
         conditions.append("document_date <= ?")
-        params.append(date_to)
+        params.append(date_to + 'T23:59:59')
     where_clause = " AND ".join(conditions)
 
     try:

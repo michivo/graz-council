@@ -34,6 +34,11 @@ function parseDate(value: string | null): string {
   if (!value) {
     return "";
   }
+  if(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value))
+  {
+    return value.slice(0, 10); // Extract the date part from the datetime string
+  }
+
   return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : "";
 }
 
@@ -44,13 +49,21 @@ export async function clientLoader({ request }: Route.ClientLoaderArgs) {
   const sort: SortOption = isSortOption(sortParam) ? sortParam : "relevance";
   const dateFrom = parseDate(url.searchParams.get("date_from"));
   const dateTo = parseDate(url.searchParams.get("date_to"));
+  const meeting = parseDate(url.searchParams.get("meeting"));
   const offset = parseOffset(url.searchParams.get("offset"));
+
+  // A selected meeting narrows the search to that single day, independent of
+  // the date_from/date_to range (which only scopes the meeting dropdown).
+  const effectiveDateFrom = meeting || dateFrom;
+  const effectiveDateTo = meeting || dateTo;
+  console.log(url.searchParams);
+  console.log({ effectiveDateFrom, effectiveDateTo, meeting });
 
   const outcome = await searchDocuments({
     query,
     sort,
-    dateFrom: dateFrom || null,
-    dateTo: dateTo || null,
+    dateFrom: effectiveDateFrom || null,
+    dateTo: effectiveDateTo || null,
     offset,
   });
 
@@ -59,13 +72,14 @@ export async function clientLoader({ request }: Route.ClientLoaderArgs) {
     sort,
     dateFrom,
     dateTo,
+    meeting,
     offset,
     ...outcome,
   };
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
-  const { query, sort, dateFrom, dateTo, offset, results, total, error } =
+  const { query, sort, dateFrom, dateTo, meeting, offset, results, total, error } =
     loaderData;
   const hasSearched = query !== "";
 
@@ -89,6 +103,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           sort={sort}
           dateFrom={dateFrom}
           dateTo={dateTo}
+          meeting={meeting}
         />
 
         <SearchResults
@@ -102,6 +117,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           sort={sort}
           dateFrom={dateFrom}
           dateTo={dateTo}
+          meeting={meeting}
         />
       </main>
 

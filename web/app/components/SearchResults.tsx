@@ -13,6 +13,7 @@ interface SearchResultsProps {
   sort: SortOption;
   dateFrom: string;
   dateTo: string;
+  meeting: string;
 }
 
 function formatDate(isoDate: string): string {
@@ -71,6 +72,7 @@ function buildPageLink(params: {
   sort: SortOption;
   dateFrom: string;
   dateTo: string;
+  meeting: string;
   offset: number;
 }): string {
   const searchParams = new URLSearchParams();
@@ -83,6 +85,9 @@ function buildPageLink(params: {
   }
   if (params.dateTo) {
     searchParams.set("date_to", params.dateTo);
+  }
+  if (params.meeting) {
+    searchParams.set("meeting", params.meeting);
   }
   if (params.offset > 0) {
     searchParams.set("offset", String(params.offset));
@@ -101,6 +106,7 @@ export function SearchResults({
   sort,
   dateFrom,
   dateTo,
+  meeting,
 }: SearchResultsProps) {
   if (!hasSearched) {
     return (
@@ -186,6 +192,7 @@ export function SearchResults({
               sort,
               dateFrom,
               dateTo,
+              meeting,
               offset: Math.max(0, offset - pageSize),
             })}
             className="inline-flex items-center gap-1 rounded-lg border border-emerald-300 px-3 py-2 text-sm font-medium text-emerald-800 hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 dark:border-emerald-800 dark:text-emerald-200 dark:hover:bg-emerald-900/40"
@@ -214,6 +221,7 @@ export function SearchResults({
               sort,
               dateFrom,
               dateTo,
+              meeting,
               offset: offset + pageSize,
             })}
             className="inline-flex items-center gap-1 rounded-lg border border-emerald-300 px-3 py-2 text-sm font-medium text-emerald-800 hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 dark:border-emerald-800 dark:text-emerald-200 dark:hover:bg-emerald-900/40"

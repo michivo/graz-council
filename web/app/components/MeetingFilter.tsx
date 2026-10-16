@@ -6,8 +6,14 @@ function formatDate(dateString: string) {
     return new Date(dateString).toLocaleDateString(undefined, options);
 }
 
-export function MeetingFilter({dateFrom, dateTo}: {dateFrom: string | null, dateTo: string | null}) {
-    const [selectedMeeting, setSelectedMeeting] = useState('');
+interface MeetingFilterProps {
+    dateFrom: string | null;
+    dateTo: string | null;
+    selectedMeeting: string;
+    onSelectedMeetingChange: (meeting: string) => void;
+}
+
+export function MeetingFilter({dateFrom, dateTo, selectedMeeting, onSelectedMeetingChange}: MeetingFilterProps) {
     const [availableMeetings, setAvailableMeetings] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -27,15 +33,16 @@ export function MeetingFilter({dateFrom, dateTo}: {dateFrom: string | null, date
     }, [dateFrom, dateTo]);
 
     return (loading ? <p>Lade...</p> : error ? <p>{error}</p> : <div><label
-        htmlFor="meeting-filter">
+        htmlFor="meeting"
+        className="block mb-2 text-sm font-medium text-gray-900 dark:text-emerald-50">
         Sitzungsdatum
     </label>
         <select
-            id="meeting-filter"
-            name="meeting-filter"
+            id="meeting"
+            name="meeting"
             className="w-full rounded-lg border border-emerald-300 bg-white px-3 py-2 text-base text-gray-900 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-50"
             value={selectedMeeting}
-            onChange={(e) => setSelectedMeeting(e.target.value)}>
+            onChange={(e) => onSelectedMeetingChange(e.target.value)}>
             <option value="">Alle Sitzungen</option>
             {availableMeetings.map((meeting) => (
                 <option key={meeting} value={meeting}>
