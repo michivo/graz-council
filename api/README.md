@@ -68,7 +68,7 @@ The server listens on `http://127.0.0.1:5000` by default. To make it
 available on another interface or port, use Flask's standard options:
 
 ```powershell
-uv run flask --app ./src/main.py run --host 0.0.0.0 --port 8000
+uv run flask --app ./src/main.py run --host 0.0.0.0 --port 5000
 ```
 
 ## Run tests

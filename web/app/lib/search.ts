@@ -33,3 +33,8 @@ export interface SearchOutcome {
   total: number;
   error: string | null;
 }
+
+export interface CouncilDatesOutcome {
+  dates: string[];
+  error: string | null;
+}

@@ -38,6 +38,7 @@ def build_fts_query(q: str) -> str:
         terms.append('"' + match.replace('"', '""') + '"')
     return " AND ".join(terms)
 
+
 app = Flask(__name__)
 CONFIG_PATH = Path(__file__).parents[0] / "../config.ini"
 config = configparser.ConfigParser()
@@ -64,8 +65,11 @@ try:
     cors_origins = config.get("cors", "ALLOWED_ORIGINS").strip()
 except (configparser.NoOptionError, configparser.NoSectionError):
     cors_origins = "*"
-origins = [origin.strip() for origin in cors_origins.split(",") if origin.strip()] or "*"
+origins = [
+    origin.strip() for origin in cors_origins.split(",") if origin.strip()
+] or "*"
 CORS(app, resources={r"/*": {"origins": origins}})
+
 
 def get_db() -> sqlite3.Connection:
     if "db" not in g:
@@ -73,18 +77,21 @@ def get_db() -> sqlite3.Connection:
         g.db.row_factory = sqlite3.Row
     return g.db
 
+
 @app.teardown_appcontext
 def close_db(exc):
     db = g.pop("db", None)
     if db is not None:
         db.close()
 
+
 @app.get("/health")
 def health():
     try:
         return jsonify(status="ok")
     except sqlite3.Error:
-        return jsonify(status="db_unavailable"), 503        
+        return jsonify(status="db_unavailable"), 503
+
 
 @app.get("/health-db")
 def health_db():
@@ -93,6 +100,40 @@ def health_db():
         return jsonify(status="ok")
     except sqlite3.Error:
         return jsonify(status="db_unavailable"), 503
+
+@app.get("/council-dates")
+def council_dates():
+    date_from = request.args.get("date_from", "").strip()
+    date_to = request.args.get("date_to", "").strip()
+    try:
+        date_from = parse_date_param(date_from) if date_from else None
+        date_to = parse_date_param(date_to) if date_to else None
+    except ValueError:
+        return jsonify(error="Invalid date format. Use YYYY-MM-DD."), 400
+
+    conditions = []
+    params: list = []
+    if date_from:
+        conditions.append("document_date >= ?")
+        params.append(date_from)
+    if date_to:
+        conditions.append("document_date <= ?")
+        params.append(date_to)
+    where_clause = " AND ".join(conditions)
+    try:
+        db = get_db()
+        rows = db.execute(
+            "SELECT DISTINCT document_date FROM fts5_index"
+            + (f" WHERE {where_clause}" if where_clause else "")
+            + " ORDER BY document_date DESC",
+            params,
+        ).fetchall()
+        dates = [row["document_date"] for row in rows]
+        return jsonify(dates=dates)
+    except sqlite3.OperationalError:
+        app.logger.exception("Failed to fetch council dates")
+        return jsonify(error="Failed to fetch council dates"), 500
+
 
 @app.get("/search")
 def search():

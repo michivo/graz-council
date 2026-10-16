@@ -4,7 +4,7 @@
  * must be a public, build-time Vite env var (`VITE_API_BASE_URL`) rather
  * than a Node-only `process.env` value.
  */
-import type { SearchOutcome, SortOption } from "./search";
+import type { CouncilDatesOutcome, SearchOutcome, SortOption } from "./search";
 import { PAGE_SIZE } from "./search";
 
 interface SearchApiResponse {
@@ -21,6 +21,30 @@ interface SearchApiError {
 const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:5000"
 ).replace(/\/+$/, "");
+
+export async function getCouncilDates(dateFrom: string | null, dateTo: string | null): Promise<CouncilDatesOutcome> {
+  const url = new URL("/council-dates", API_BASE_URL);
+  if (dateFrom) {
+    url.searchParams.set("date_from", dateFrom);
+  }
+  if (dateTo) {
+    url.searchParams.set("date_to", dateTo);
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(url);
+  } catch {
+    return { error: "Die Such-API ist derzeit nicht erreichbar. Bitte versuchen Sie es später erneut.", dates: [] };
+  }
+
+  if (!response.ok) {
+    return { error: "Die Suche ist fehlgeschlagen. Bitte versuchen Sie es erneut.", dates: [] };
+  }
+
+  const payload = await response.json().catch(() => null);
+  return Array.isArray(payload?.dates) ? { dates: payload.dates, error: null } : { dates: [], error: "Die Suche ist fehlgeschlagen. Bitte versuchen Sie es erneut." };
+}
 
 export async function searchDocuments(params: {
   query: string;

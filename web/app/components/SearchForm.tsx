@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Form } from "react-router";
 import { SORT_OPTIONS, type SortOption } from "~/lib/search";
 import { SearchIcon } from "./icons";
+import { MeetingFilter } from "./MeetingFilter";
 
 interface SearchFormProps {
   query: string;
@@ -10,6 +12,8 @@ interface SearchFormProps {
 }
 
 export function SearchForm({ query, sort, dateFrom, dateTo }: SearchFormProps) {
+  const [currentDateFrom, setCurrentDateFrom] = useState(dateFrom);
+  const [currentDateTo, setCurrentDateTo] = useState(dateTo);
   const hasFilters = sort !== "relevance" || dateFrom !== "" || dateTo !== "";
 
   return (
@@ -82,7 +86,8 @@ export function SearchForm({ query, sort, dateFrom, dateTo }: SearchFormProps) {
               id="date_from"
               name="date_from"
               type="date"
-              defaultValue={dateFrom}
+              value={currentDateFrom}
+              onChange={(e) => setCurrentDateFrom(e.target.value)}
               className="w-full rounded-lg border border-emerald-300 bg-white px-3 py-2 text-base text-gray-900 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-50"
             />
           </div>
@@ -97,10 +102,13 @@ export function SearchForm({ query, sort, dateFrom, dateTo }: SearchFormProps) {
               id="date_to"
               name="date_to"
               type="date"
-              defaultValue={dateTo}
+              value={currentDateTo}
+              onChange={(e) => setCurrentDateTo(e.target.value)}
               className="w-full rounded-lg border border-emerald-300 bg-white px-3 py-2 text-base text-gray-900 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-50"
             />
           </div>
+          <MeetingFilter dateFrom={currentDateFrom || null} dateTo={currentDateTo || null}>
+          </MeetingFilter>
         </fieldset>
       </details>
     </Form>

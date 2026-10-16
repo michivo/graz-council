@@ -31,6 +31,11 @@ export function SiteFooter() {
         >
           Impressum
         </Link>
+        <Link to="https://github.com/michivo/graz-council/"
+        className="font-medium text-emerald-700 underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 dark:text-emerald-400"
+        >
+          GitHub
+        </Link>
       </nav>
     </footer>
   );
