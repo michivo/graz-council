@@ -15,7 +15,13 @@ dependencies = [
 
 [project.scripts]
 graz-fetcher = "graz_fetcher:main"
+graz-fetcher-digra = "graz_fetcher_digra:main"
+graz-pdf-images = "graz_pdf_images:main"
 graz-indexer = "graz_indexer:main"
+graz-merger = "graz_merger:main"
+
+[tool.uv.build-backend]
+module-name = ["graz_fetcher", "graz_fetcher_digra", "graz_indexer", "graz_merger", "graz_pdf_images"]
 
 [build-system]
 requires = ["uv_build>=0.12.18,<0.13.0"]

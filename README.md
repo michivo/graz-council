@@ -9,7 +9,7 @@ through a lightweight HTTP API and a German-language web interface.
 The project is split into three packages:
 
 - [`tools/`](tools/) downloads meeting metadata and optionally PDFs, then
-  extracts and indexes PDF content.
+  extracts and indexes PDF content. It can also merge PDFs by meeting date.
 - [`api/`](api/) serves the indexed content through a Flask API.
 - [`web/`](web/) is a React Router web app with a search page for the API.
 
@@ -89,6 +89,18 @@ uv run graz-indexer
 The indexer extracts text page by page with PyMuPDF and creates or updates the
 SQLite tables used by the API. Every PDF in `PDF_FOLDER` must have a matching
 metadata JSON file.
+
+Optionally, merge the PDFs into one document per meeting day, with a title
+page before each source document:
+
+```powershell
+uv run graz-merger
+```
+
+The merger groups both `YYMMDD` and `YYYYMMDD` filename prefixes and writes
+`YYYYMMDD.pdf` files to `PDF_FOLDER\merged`, replacing existing daily outputs.
+It does not require metadata JSON files. See [the tools documentation](tools/README.md)
+for title generation and error handling.
 
 ### 3. Configure and run the API
 
@@ -212,7 +224,8 @@ Useful package-specific documentation:
 ├── tools/
 │   └── src/
 │       ├── graz_fetcher/       # Archive scraping and document metadata
-│       └── graz_indexer/       # PDF extraction and SQLite FTS5 indexing
+│       ├── graz_indexer/       # PDF extraction and SQLite FTS5 indexing
+│       └── graz_merger/        # Daily PDF bundles with document title pages
 ├── web/
 │   └── app/
 │       ├── components/         # Search form, results, icons
